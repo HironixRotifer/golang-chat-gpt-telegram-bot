@@ -49,7 +49,6 @@ func (b *Bot) handleStartCommand(message *tgbotapi.Message) error {
 	// 	return err
 	// }
 	msg := tgbotapi.NewMessage(message.Chat.ID, "hello")
-	// fmt.Sprintf(replyStartTemplate, authLink))
 
 	_, err := b.bot.Send(msg)
 	return err
