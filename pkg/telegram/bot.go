@@ -3,6 +3,7 @@ package telegram
 import (
 	"log"
 
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/repository"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	// "github.com/zhashkevych/go-pocket-sdk"
 )
@@ -10,12 +11,13 @@ import (
 type Bot struct {
 	bot *tgbotapi.BotAPI
 	// pocketClient *pocket.Client
-	redirectURL string
+	tokenRepository repository.TokenRepository
+	redirectURL     string
 }
 
 // Функция создания нового бота
-func NewBot(bot *tgbotapi.BotAPI, redirectURL string) *Bot {
-	return &Bot{bot: bot, redirectURL: redirectURL}
+func NewBot(bot *tgbotapi.BotAPI, tr repository.TokenRepository, redirectURL string) *Bot {
+	return &Bot{bot: bot, tokenRepository: tr, redirectURL: redirectURL}
 }
 
 // Метод запуска бота

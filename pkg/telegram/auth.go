@@ -9,6 +9,10 @@ package telegram
 // 		return "", err
 // 	}
 
+// 	if err := b.tokenRepository.Save(chatID, requestToken, repository.RequestTokens); err != nil {
+// 		return "", err
+// 	}
+
 // 	return b.pocketClient.GetAuthorizationURL(requestToken, redirectURL)
 // 	// authorizationLink, err := b.generatePocketLink()
 // 	// if err != nil {
