@@ -8,7 +8,7 @@ import (
 
 // API key from chat-gpt3
 const (
-	API_KEY = "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"
+	API_KEY = ""
 )
 
 // vars for GetResponse function
