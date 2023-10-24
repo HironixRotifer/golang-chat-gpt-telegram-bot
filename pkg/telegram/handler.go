@@ -41,6 +41,10 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, message.Text)
 
 	b.bot.Send(msg)
+
+	if message.Text == "" {
+		message.Text = "Повторите попытку"
+	}
 }
 
 func (b *Bot) handleStartCommand(message *tgbotapi.Message) error {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/repository"
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/repository/boltdb"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/repository/server"
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/telegram"
 	"github.com/boltdb/bolt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -23,7 +24,7 @@ func main() {
 	// pocketClient, err := pocket.NewClient("109274-d1ae0275f274205aedbf2ba")
 	// if err != nil {
 	// 	log.Fatal(err)
- 
+
 	db, err := initDB()
 	if err != nil {
 		log.Fatal(err)
@@ -32,7 +33,16 @@ func main() {
 	tokenRepository := boltdb.NewTokenRepository(db)
 
 	telegramBot := telegram.NewBot(bot, tokenRepository, "http://localhost")
-	if err := telegramBot.Start(); err != nil {
+
+	AuthorizationServer := server.NewAuthorizationServer(tokenRepository, "https://t.me/WebNix_bot")
+
+	go func() {
+		if err := telegramBot.Start(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	if err := AuthorizationServer.Start(); err != nil {
 		log.Fatal(err)
 	}
 }
