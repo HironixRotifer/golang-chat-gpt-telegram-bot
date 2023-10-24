@@ -34,8 +34,12 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) {
 		s += v
 	}
 
-	message.Text = s
+	// response := gpt.Test(gpt.Client, gpt.Ctx, message.Text)
 
+	message.Text = s
+	if message.Text == "" {
+		message.Text = "Повторите попытку"
+	}
 	log.Println("TEXT2: ", message.Text)
 
 	msg := tgbotapi.NewMessage(message.Chat.ID, message.Text)
