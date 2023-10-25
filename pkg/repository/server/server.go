@@ -1,6 +1,7 @@
 package server
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -50,6 +51,8 @@ func (s *AuthorizationServer) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	log.Printf("chat_id: %d\nrequest_token: %s\n", chatID, requestToken)
+
 	// err = s.TokenRepository.Save(chatID, repository.AccesTokens, requestToken)
 	// if err != nil {
 	// 	w.WriteHeader(http.StatusBadRequest)
@@ -57,4 +60,5 @@ func (s *AuthorizationServer) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	// }
 
 	w.Header().Add("Location", s.redirectURL)
+	w.WriteHeader(http.StatusMovedPermanently)
 }
