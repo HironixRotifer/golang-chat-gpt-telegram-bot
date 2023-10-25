@@ -20,7 +20,7 @@ func NewAuthorizationServer(tokenRepository repository.TokenRepository, redirect
 
 func (s *AuthorizationServer) Start() error {
 	s.server = &http.Server{
-		Addr:    ":80",
+		Addr:    ":8080",
 		Handler: s,
 	}
 

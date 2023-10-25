@@ -5,13 +5,19 @@ import (
 
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/repository"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	// "github.com/pkg/errors"
-	// "github.com/zhashkevych/go-pocket-sdk"
+)
+
+// constants with commands to bot
+const (
+	commandStart          = "start"    // command to start bot
+	commandAccount        = "account"  // command to get account info
+	commandSettings       = "settings" // command to set type of bot
+	commandHelp           = "help"     // command to get help list all commands
+	commandGeneratedImage = "genimg"   // command to generate image by keywords
 )
 
 type Bot struct {
-	bot *tgbotapi.BotAPI
-	// pocketClient *pocket.Client
+	bot             *tgbotapi.BotAPI
 	tokenRepository repository.TokenRepository
 	redirectURL     string
 }
@@ -55,8 +61,3 @@ func (b *Bot) initUpdatesChannel() (tgbotapi.UpdatesChannel, error) {
 
 	return b.bot.GetUpdatesChan(u)
 }
-
-const (
-	commandStart       = "start"
-	replyStartTemplate = ""
-)
