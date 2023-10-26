@@ -7,6 +7,15 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+// constants with commands to bot
+const (
+	commandStart          = "start"   // command to start bot
+	commandAccount        = "account" // command to get account info
+	commandSettings       = "setting" // command to set type of bot
+	commandGeneratedImage = "genimg"  // command to generate image by keywords
+	commandHelp           = "help"    // command to get help list all commands
+)
+
 var (
 	// ok = "👌"
 	oh = "🫢"
@@ -15,11 +24,18 @@ var (
 )
 
 // handleCommand is a handle function to send a command for bot
-// want: telegram message by "/start"
 func (b *Bot) handleCommand(message *tgbotapi.Message) error {
 	switch message.Command() {
 	case commandStart:
 		return b.handleStartCommand(message)
+	case commandAccount:
+		return b.handleAccountCommand(message)
+	case commandSettings:
+		return b.handleSettingCommand(message)
+	case commandGeneratedImage:
+		return b.handleGenerateImageCommand(message)
+	case commandHelp:
+		return b.handleHelpCommand(message)
 	default:
 		return b.handleUnknownCommand(message)
 	}
@@ -59,8 +75,63 @@ func (b *Bot) handleStartCommand(message *tgbotapi.Message) error {
 	return err
 }
 
+// handleAccountCommand is handle function by getting info about user account
+func (b *Bot) handleAccountCommand(message *tgbotapi.Message) error {
+	msg := tgbotapi.NewMessage(message.Chat.ID, "todo:")
+	_, err := b.bot.Send(msg)
+	return err
+}
+
+// handleSettingCommand is a handle function by change type of chat-GPT
+func (b *Bot) handleSettingCommand(message *tgbotapi.Message) error {
+	msg := tgbotapi.NewMessage(message.Chat.ID, "todo:")
+
+	// создаем кнопки
+	btn1 := tgbotapi.NewInlineKeyboardButtonData("gpt-3.5-turbo", "btn1")
+	btn2 := tgbotapi.NewInlineKeyboardButtonData("gpt-3.5-turbo-instruct", "gpt-3.5-turbo-instruct")
+	btn3 := tgbotapi.NewInlineKeyboardButtonData("gpt-3.5-turbo-16k", "btn3")
+	btn4 := tgbotapi.NewInlineKeyboardButtonData("gpt-4", "gpt-4")
+	row1 := tgbotapi.NewInlineKeyboardRow(btn1, btn2)
+	row2 := tgbotapi.NewInlineKeyboardRow(btn3, btn4)
+
+	keyboard := tgbotapi.NewInlineKeyboardMarkup(row1, row2)
+
+	// отправляем сообщение с кнопками // Запихнуть в файлик строки
+	msg = tgbotapi.NewMessage(message.Chat.ID, `"В боте доступны 4 модели ChatGPT:
+	✔️ gpt-3.5-turbo — самая популярная и доступная модель в семействе GPT, оптимизирована для чата и отлично справляется с пониманием и генерацией текста. Лимит токенов: 4096.
+	✔️ gpt-3.5-turbo-instruct — новая модель, оптимизирована для ответов на вопросы и конкретных задач: переведи, сделай саммари и др. Лимит токенов: 4096.
+	✔️ gpt-3.5-turbo-16k имеет те же возможности, что основная модель, но поддерживает в 4 раза больше контекста. Лимит токенов: 16384.
+	✔️ gpt-4 — самая совершенная на сегодня модель понимания и генерации естественного языка, способная справляться со сложными и творческими задачами. Лимит токенов: 8192.
+	
+	Лимит токенов определяет макcимально возможную длину вашего запроса + сгенерированного ответа GPT. 1 токен равен примерно 4 символам английского языка или 1 символу на других языках.
+	
+	В бесплатной версии бота доступны модели gpt-3.5-turbo и -instruct. Пользователи с премиум-подпиской могут выбрать также модель 16k. Доступ к GPT-4 можно приобрести отдельно в разделе /premium:"`)
+
+	msg.ReplyMarkup = keyboard
+
+	// Удаление сообщения
+	// изменение переменной
+	// поместить строки в файл
+
+	_, err := b.bot.Send(msg)
+	return err
+}
+
+// handleGenerateImageCommand TODO:
+func (b *Bot) handleGenerateImageCommand(message *tgbotapi.Message) error {
+	msg := tgbotapi.NewMessage(message.Chat.ID, "todo:")
+	_, err := b.bot.Send(msg)
+	return err
+}
+
+// handleHelpCommand is a handle function by getting info about the commands
+func (b *Bot) handleHelpCommand(message *tgbotapi.Message) error {
+	msg := tgbotapi.NewMessage(message.Chat.ID, "todo:")
+	_, err := b.bot.Send(msg)
+	return err
+}
+
 // handleUnknownCommand is a handle function by getting unknown command
-// Send a message: "I don`t know this command ;(" if the command is not in the list
 func (b *Bot) handleUnknownCommand(message *tgbotapi.Message) error {
 	msg := tgbotapi.NewMessage(message.Chat.ID, "I don`t know this command ;(")
 	_, err := b.bot.Send(msg)
