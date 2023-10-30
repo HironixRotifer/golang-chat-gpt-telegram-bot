@@ -1,4 +1,4 @@
-package gpt
+package gpt3
 
 import (
 	"context"
@@ -15,6 +15,7 @@ const (
 var (
 	Client = gpt3.NewClient(API_KEY)
 	Ctx    = context.Background()
+	GPType = "text-davinci-003"
 )
 
 type NullWriter int

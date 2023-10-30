@@ -3,7 +3,7 @@ package telegram
 import (
 	"strings"
 
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/gpt"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/gpt3"
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/models"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -50,7 +50,7 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) {
 	id, _ := b.bot.Send(msgTemp)
 
 	// get response from chat-gpt3
-	response, err := gpt.GetResponse(gpt.Client, gpt.Ctx, message.Text)
+	response, err := gpt3.GetResponse(gpt3.Client, gpt3.Ctx, message.Text)
 	if err != nil {
 		message.Text = err.Error()
 	}
@@ -85,29 +85,32 @@ func (b *Bot) handleAccountCommand(message *tgbotapi.Message) error {
 
 // handleSettingCommand is a handle function by change type of chat-GPT
 func (b *Bot) handleSettingCommand(message *tgbotapi.Message) error {
-	msg := tgbotapi.NewMessage(message.Chat.ID, "todo:")
-
-	// создаем кнопки
-	btn1 := tgbotapi.NewInlineKeyboardButtonData("gpt-3.5-turbo", "btn1")
-	btn2 := tgbotapi.NewInlineKeyboardButtonData("gpt-3.5-turbo-instruct", "gpt-3.5-turbo-instruct")
-	btn3 := tgbotapi.NewInlineKeyboardButtonData("gpt-3.5-turbo-16k", "btn3")
-	btn4 := tgbotapi.NewInlineKeyboardButtonData("gpt-4", "gpt-4")
-	row1 := tgbotapi.NewInlineKeyboardRow(btn1, btn2)
-	row2 := tgbotapi.NewInlineKeyboardRow(btn3, btn4)
-
+	// create a buttons
+	var row1 = []tgbotapi.InlineKeyboardButton{
+		tgbotapi.NewInlineKeyboardButtonData("gpt-3.5-turbo-16k", "gpt-3.5-turbo"),
+		tgbotapi.NewInlineKeyboardButtonData("gpt-3.5-turbo-instruct", "gpt-3.5-turbo-instruct"),
+	}
+	var row2 = []tgbotapi.InlineKeyboardButton{
+		tgbotapi.NewInlineKeyboardButtonData("gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k"),
+		tgbotapi.NewInlineKeyboardButtonData("gpt-4", "gpt-4"),
+	}
 	keyboard := tgbotapi.NewInlineKeyboardMarkup(row1, row2)
 
-	// отправляем сообщение с кнопками // Запихнуть в файлик строки
-	msg = tgbotapi.NewMessage(message.Chat.ID, models.SettingCommandString)
-
+	// send message with buttons
+	msg := tgbotapi.NewMessage(message.Chat.ID, models.SettingCommandString)
 	msg.ReplyMarkup = keyboard
-
-	// Удаление сообщения
-	// изменение переменной
-	// поместить строки в файл
-
 	_, err := b.bot.Send(msg)
+
 	return err
+}
+
+func (b *Bot) handleCallbackQuery(query *tgbotapi.CallbackQuery) {
+	// if query.Data == "gpt-3.5-turbo" {
+	gpt3.GPType = query.Data // add to require
+	// }
+
+	deleteMsg := tgbotapi.NewDeleteMessage(query.Message.Chat.ID, query.Message.MessageID)
+	b.bot.Send(deleteMsg)
 }
 
 // handleGenerateImageCommand TODO:

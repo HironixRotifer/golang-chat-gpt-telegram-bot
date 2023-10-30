@@ -9,7 +9,6 @@ import (
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/telegram"
 	"github.com/boltdb/bolt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	// "github.com/zhashkevych/go-pocket-sdk"
 )
 
 func main() {
@@ -17,13 +16,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Создание запуск бота
 	bot.Debug = true
-	// Надо вставить ключ с GetPocket
-	// pocketClient, err := pocket.NewClient("109274-d1ae0275f274205aedbf2ba")
-	// if err != nil {
-	// 	log.Fatal(err)
 
 	db, err := initDB()
 	if err != nil {
@@ -31,9 +24,7 @@ func main() {
 	}
 
 	tokenRepository := boltdb.NewTokenRepository(db)
-
 	telegramBot := telegram.NewBot(bot, tokenRepository, "http://localhost")
-
 	AuthorizationServer := server.NewAuthorizationServer(tokenRepository, "https://t.me/WebNix_bot")
 
 	go func() {
@@ -71,7 +62,3 @@ func initDB() (*bolt.DB, error) {
 
 	return db, nil
 }
-
-// gpt.Ctx = context.Background()
-// gpt.Client = gpt3.NewClient(gpt.API_KEY)
-// log.Println("ЭТО ЗДЕСЬ: ", gpt.Ctx, gpt.Client, gpt.API_KEY)

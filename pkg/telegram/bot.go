@@ -35,6 +35,10 @@ func (b *Bot) Start() error {
 // handleUpdates updates chat, receives text and commands
 func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 	for update := range updates {
+		if update.CallbackQuery != nil { // to handle a user's click on inline buttons
+			b.handleCallbackQuery(update.CallbackQuery)
+			continue
+		}
 		if update.Message == nil { // ignore any non-Message Updates
 			continue
 		}
