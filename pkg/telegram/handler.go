@@ -71,14 +71,14 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) {
 
 // handleStrartCommand is handle function to start a bot
 func (b *Bot) handleStartCommand(message *tgbotapi.Message) error {
-	msg := tgbotapi.NewMessage(message.Chat.ID, "what's up? my name is Rosetta. i could help you with anything, but only when i feel like it.")
+	msg := tgbotapi.NewMessage(message.Chat.ID, models.StartCommandString)
 	_, err := b.bot.Send(msg)
 	return err
 }
 
 // handleAccountCommand is handle function by getting info about user account
 func (b *Bot) handleAccountCommand(message *tgbotapi.Message) error {
-	msg := tgbotapi.NewMessage(message.Chat.ID, "todo:")
+	msg := tgbotapi.NewMessage(message.Chat.ID, models.AccountCommandString)
 	_, err := b.bot.Send(msg)
 	return err
 }
@@ -97,13 +97,14 @@ func (b *Bot) handleSettingCommand(message *tgbotapi.Message) error {
 	keyboard := tgbotapi.NewInlineKeyboardMarkup(row1, row2)
 
 	// send message with buttons
-	msg := tgbotapi.NewMessage(message.Chat.ID, models.SettingCommandString)
+	msg := tgbotapi.NewMessage(message.Chat.ID, models.SettingCommandString) // todo: Вынести в отдельную функцию
 	msg.ReplyMarkup = keyboard
 	_, err := b.bot.Send(msg)
 
 	return err
 }
 
+// handleCallbackQuery is a handle function by getting data with query
 func (b *Bot) handleCallbackQuery(query *tgbotapi.CallbackQuery) {
 	// if query.Data == "gpt-3.5-turbo" {
 	gpt3.GPType = query.Data // add to require
@@ -115,21 +116,21 @@ func (b *Bot) handleCallbackQuery(query *tgbotapi.CallbackQuery) {
 
 // handleGenerateImageCommand TODO:
 func (b *Bot) handleGenerateImageCommand(message *tgbotapi.Message) error {
-	msg := tgbotapi.NewMessage(message.Chat.ID, "todo:")
+	msg := tgbotapi.NewMessage(message.Chat.ID, models.GenerateImageCommandString)
 	_, err := b.bot.Send(msg)
 	return err
 }
 
 // handleHelpCommand is a handle function by getting info about the commands
 func (b *Bot) handleHelpCommand(message *tgbotapi.Message) error {
-	msg := tgbotapi.NewMessage(message.Chat.ID, "todo:")
+	msg := tgbotapi.NewMessage(message.Chat.ID, models.HelpCommandString)
 	_, err := b.bot.Send(msg)
 	return err
 }
 
 // handleUnknownCommand is a handle function by getting unknown command
 func (b *Bot) handleUnknownCommand(message *tgbotapi.Message) error {
-	msg := tgbotapi.NewMessage(message.Chat.ID, "I don`t know this command ;(")
+	msg := tgbotapi.NewMessage(message.Chat.ID, models.UnknownCommandString)
 	_, err := b.bot.Send(msg)
 	return err
 }

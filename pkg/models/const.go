@@ -84,5 +84,5 @@ const (
 									
 									По всем вопросам также можно написать администраторам @webtimr|@Hironix_Rotifer"`
 
-	UnknownCommandString = "You entered an unknown command"
+	UnknownCommandString = "I don`t know this command ;("
 )
