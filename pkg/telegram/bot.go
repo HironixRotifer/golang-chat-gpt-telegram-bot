@@ -7,15 +7,6 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-// constants with commands to bot
-const (
-	commandStart          = "start"    // command to start bot
-	commandAccount        = "account"  // command to get account info
-	commandSettings       = "settings" // command to set type of bot
-	commandHelp           = "help"     // command to get help list all commands
-	commandGeneratedImage = "genimg"   // command to generate image by keywords
-)
-
 type Bot struct {
 	bot             *tgbotapi.BotAPI
 	tokenRepository repository.TokenRepository
@@ -41,6 +32,7 @@ func (b *Bot) Start() error {
 	return nil
 }
 
+// handleUpdates updates chat, receives text and commands
 func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 	for update := range updates {
 		if update.Message == nil { // ignore any non-Message Updates

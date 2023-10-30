@@ -42,21 +42,3 @@ func GetResponse(client gpt3.Client, ctx context.Context, question string) ([]st
 
 	return msg, nil
 }
-
-// func Test(client gpt3.Client, ctx context.Context, question string) string {
-// 	resp, err := client.Completion(ctx, gpt3.CompletionRequest{
-// 		Prompt: []string{
-// 			question,
-// 		},
-
-// 		MaxTokens:   gpt3.IntPtr(3000),
-// 		Temperature: gpt3.Float32Ptr(0),
-// 		Stop:        []string{"."},
-// 	})
-
-// 	if err != nil {
-// 		log.Printf("ERROR: %v", err)
-// 	}
-
-// 	return resp.Choices[0].Text
-// }
