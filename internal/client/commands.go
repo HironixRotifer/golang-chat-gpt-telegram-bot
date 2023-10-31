@@ -1,6 +1,9 @@
 package client
 
 import (
+	"log"
+
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/gpt3"
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/models"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -34,8 +37,23 @@ func (b *Bot) handleCommand(message *tgbotapi.Message) error {
 
 // handleGenerateImageCommand TODO:
 func (b *Bot) handleGenerateImageCommand(message *tgbotapi.Message) error {
-	msg := tgbotapi.NewMessage(message.Chat.ID, models.GenerateImageCommandString)
-	_, err := b.bot.Send(msg)
+	keywords := message.CommandArguments()
+	msgTemp := tgbotapi.NewMessage(message.Chat.ID, "Please wait while I process your question..."+ct)
+	id, _ := b.bot.Send(msgTemp)
+	photo, err := gpt3.GenerateImageResponse(gpt3.Ctx, keywords)
+	if err != nil {
+		log.Println(err)
+	}
+
+	photoConfig := tgbotapi.NewPhotoUpload(message.Chat.ID, photo)
+	deleteMsg := tgbotapi.NewDeleteMessage(message.Chat.ID, id.MessageID)
+	b.bot.Send(deleteMsg)
+
+	_, err = b.bot.Send(photoConfig)
+	if err != nil {
+		log.Printf("Failed to send Photo: %v", err)
+	}
+
 	return err
 }
 

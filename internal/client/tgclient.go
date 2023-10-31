@@ -44,6 +44,9 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 			b.handleCommand(update.Message)
 			continue
 		}
+		// if keywords := update.Message.CommandArguments(); keywords != "" {
+		// 	b.handleGenerateImageCommand(keywords)
+		// }
 
 		b.handleMessage(update.Message)
 	}

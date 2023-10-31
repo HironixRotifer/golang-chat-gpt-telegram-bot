@@ -1,7 +1,6 @@
 package client
 
 import (
-	"log"
 	"strings"
 
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/gpt3"
@@ -42,26 +41,10 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) {
 	b.bot.Send(msg)
 }
 
-// handleMessage is a handle function to send image
-func (b *Bot) handleGenerateImage(message *tgbotapi.Message) {
-	msgTemp := tgbotapi.NewMessage(message.Chat.ID, "Please wait while I process your question..."+ct)
-	id, _ := b.bot.Send(msgTemp)
-	photo, err := gpt3.GenerateImageResponse(gpt3.Ctx, message.Text)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+// // handleMessage is a handle function to send image
+// func (b *Bot) handleGenerateImage(message *tgbotapi.Message) {
 
-	photoConfig := tgbotapi.NewPhotoUpload(message.Chat.ID, photo)
-	deleteMsg := tgbotapi.NewDeleteMessage(message.Chat.ID, id.MessageID)
-	b.bot.Send(deleteMsg)
-
-	_, err = b.bot.Send(photoConfig)
-	if err != nil {
-		log.Printf("Failed to send Photo: %v", err)
-		return
-	}
-}
+// }
 
 // handleCallbackQuery is a handle function by getting data with query TODO: Update
 func (b *Bot) handleCallbackQuery(query *tgbotapi.CallbackQuery) {
