@@ -6,8 +6,6 @@ import (
 	telegram "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/client"
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/token"
 
-	// token "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/token"
-
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
