@@ -12,7 +12,7 @@ import (
 
 // API key from chat-gpt3
 const (
-	API_KEY = "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"
+	API_KEY = ""
 )
 
 // vars for GetResponse function
