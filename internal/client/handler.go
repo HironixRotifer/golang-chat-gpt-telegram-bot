@@ -3,8 +3,8 @@ package telegram
 import (
 	"strings"
 
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/gpt3"
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/models"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/gpt3"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/models"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -134,3 +134,13 @@ func (b *Bot) handleUnknownCommand(message *tgbotapi.Message) error {
 	_, err := b.bot.Send(msg)
 	return err
 }
+
+// func deleteInlineButtons(c *Client, userID int64, msgID int, sourceText string) error {
+// 	msg := tgbotapi.NewEditMessageText(userID, msgID, sourceText)
+// 	_, err := c.client.Send(msg)
+// 	if err != nil {
+// 		logger.Error("Ошибка отправки сообщения", "err", err)
+// 		return errors.Wrap(err, "client.Send remove inline-buttons")
+// 	}
+// 	return nil
+// }

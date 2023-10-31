@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/telegram"
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/token"
+	telegram "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/client"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/token"
 
 	// token "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/token"
 
