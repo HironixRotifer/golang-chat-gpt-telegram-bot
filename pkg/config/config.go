@@ -5,14 +5,13 @@ import (
 
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/logger"
 
-	
-
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	Token string
+	Token        string
+	mainCurrency int64
 }
 
 type Service struct {

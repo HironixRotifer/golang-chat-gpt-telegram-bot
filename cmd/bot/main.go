@@ -3,12 +3,15 @@ package main
 import (
 	"log"
 
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/telegram"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	_ "github.com/lib/pq"
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/logger"
-	"github.com/ellavs/tg-bot-golang/internal/model/db"
+	telegram "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/client"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/db"
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/helpers/dbutils"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/logger"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/messages"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/tasks/reportserver"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -31,4 +34,9 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
+
+	msgModel := messages.New(userStorage)
+
+	reportserver.StartReportServer(msgModel)
+
 }
