@@ -6,30 +6,30 @@ import (
 	"log"
 	"os"
 
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/logger"
 	"github.com/PullRequestInc/go-gpt3"
 	openai "github.com/sashabaranov/go-openai"
 )
 
-// API key from chat-gpt3
+// CodexCodeDavinci002 для кодинга TODO: добавить в список используемых машин
+
+// API key from openai
 const (
 	API_KEY = ""
 )
 
-// vars for GetResponse function
 var (
-	client = gpt3.NewClient(API_KEY)
-	Ctx    = context.Background()
-	GPType = "text-davinci-003"
-	c      = openai.NewClient(API_KEY)
+	client = gpt3.NewClient(API_KEY) // TODO: remove
+	// type of openai engine
+	EngineTypes = "text-davinci-003"
+	c           = openai.NewClient(API_KEY) // TODO: remove
 )
 
-type NullWriter int
-
-func (NullWriter) Write([]byte) (int, error) { return 0, nil }
-
-// GetResponse is a function to answer with user question
-func GetResponseByQuestion(ctx context.Context, question string) ([]string, error) {
+// GetResponseByQuestion is a function to answer with user question
+func GetResponseByQuestion(question string) ([]string, error) {
 	var msg []string
+
+	ctx := context.Background()
 	err := client.CompletionStreamWithEngine(ctx, gpt3.TextDavinci003Engine, gpt3.CompletionRequest{
 		Prompt: []string{
 			question,
@@ -39,86 +39,90 @@ func GetResponseByQuestion(ctx context.Context, question string) ([]string, erro
 		Stop:        []string{"."},
 	}, func(resp *gpt3.CompletionResponse) {
 		msg = append(msg, resp.Choices[0].Text)
-		// log.Println("TEXT3: ", msg)
 	})
-	// log.Println("TEXT4: ", msg)
 
 	if err != nil {
+		logger.Error("Error to get response from openai: ", err)
 		return nil, err
 	}
 
 	return msg, nil
 }
 
-// func GetResponseByQuestion(ctx context.Context, question string) ([]string, error) {
-// 	message := []openai.ChatCompletionMessage{
-// 		{
-// 			Content: question,
-// 			Role:    "assistant",
-// 		},
-// 	}
-// 	var msg []string
+func GetResponseByQuestionOpenAi(question string) ([]string, error) {
+	// Personalidade
 
-// 	log.Println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: ", message)
+	// openai.ChatMessageRoleAssistant
 
-// 	stream, err := c.CreateChatCompletionStream(ctx, openai.ChatCompletionRequest{
-// 		Model:       openai.GPT3Dot5Turbo0301,
-// 		Messages:    message,
-// 		Stop:        []string{"."},
-// 		MaxTokens:   3000,
-// 		Temperature: 0,
-// 	})
-// 	if err != nil {
-// 		log.Printf("Error to get question: %v", err)
-// 		return nil, err
-// 	}
+	ctx := context.Background()
+	message := []openai.ChatCompletionMessage{
+		{
+			Content: question,
+			Role:    "assistant",
+		},
+	}
 
-// 	resp, err := stream.Recv()
-// 	if err != nil {
-// 		log.Printf("Error to get question: %v", err)
-// 		return nil, err
+	log.Println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: ", message)
 
-// 	}
-// 	log.Println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: ", resp)
+	stream, err := c.CreateChatCompletionStream(ctx, openai.ChatCompletionRequest{
+		Model:       openai.GPT3Dot5Turbo0301, // EngineTypes
+		Messages:    message,
+		Stop:        []string{"."},
+		MaxTokens:   3000,
+		Temperature: 0,
+	})
+	if err != nil {
+		logger.Error("Error to get response from openai: ", err)
+		return nil, err
+	}
 
-// 	stream.Close()
+	resp, err := stream.Recv()
+	if err != nil {
+		logger.Error("Error to response processing sream recv: ", err)
+		return nil, err
 
-// 	log.Println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: ", msg)
+	}
+	log.Println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: ", resp)
 
-// 	msg = append(msg, resp.Choices[0].Delta.Content)
+	stream.Close()
 
-// 	return msg, nil
+	var msg []string
+	log.Println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: ", msg)
 
-// }
+	msg = append(msg, resp.Choices[0].Delta.Content)
+
+	return msg, nil
+}
 
 // TODO: оптимизация строк
 // GenerateImageResponse is a function to generate image with keywords
-func GenerateImageResponse(ctx context.Context, prompt string) (*os.File, error) {
+func GenerateImageResponse(prompt string) (*os.File, error) {
+	ctx := context.Background()
 	req := openai.ImageRequest{
 		Prompt:         prompt,
 		Size:           openai.CreateImageSize1024x1024,
 		ResponseFormat: openai.CreateImageResponseFormatB64JSON,
 	}
 
-	resp, err := c.CreateImage(Ctx, req)
+	resp, err := c.CreateImage(ctx, req)
 	if err != nil {
-		log.Printf("Error to generate image: %v", err) // add logger
+		logger.Error("Error to generate image: ", err)
 	}
 
 	b, err := base64.StdEncoding.DecodeString(resp.Data[0].B64JSON)
 	if err != nil {
-		log.Printf("Error to generate image: %v", err) // add logger
+		logger.Error("Error to decode string returns the bytes represented by the base64 string: ", err)
 	}
 
 	f, err := os.Create("image.png")
 	if err != nil {
-		log.Printf("Error to generate image: %v", err) // add logger
+		logger.Error("Error to creates the named file: ", err)
 	}
 	defer f.Close()
 
 	_, err = f.Write(b)
 	if err != nil {
-		log.Printf("Error to generate image: %v", err) // add logger
+		logger.Error("Error to returns the number of bytes written: ", err)
 	}
 
 	return f, nil

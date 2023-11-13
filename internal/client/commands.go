@@ -40,7 +40,7 @@ func (b *Bot) handleGenerateImageCommand(message *tgbotapi.Message) error {
 	keywords := message.CommandArguments()
 	msgTemp := tgbotapi.NewMessage(message.Chat.ID, "Please wait while I process your question..."+ct)
 	id, _ := b.bot.Send(msgTemp)
-	photo, err := gpt3.GenerateImageResponse(gpt3.Ctx, keywords)
+	photo, err := gpt3.GenerateImageResponse(keywords)
 	if err != nil {
 		log.Println(err)
 	}
@@ -105,3 +105,14 @@ func (b *Bot) handleSettingCommand(message *tgbotapi.Message) error {
 
 	return err
 }
+
+// func (b *Bot) test() {
+// 	b.bot.GetChatAdministrators()
+
+// 	b.bot.GetMe()
+
+// 	b.bot.RestrictChatMember()
+
+// 	b.bot.PromoteChatMember() // добавляет права администратора пользователю
+
+// }

@@ -22,7 +22,7 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) {
 	id, _ := b.bot.Send(msgTemp)
 
 	// get response from chat-gpt3
-	response, err := gpt3.GetResponseByQuestion(gpt3.Ctx, message.Text)
+	response, err := gpt3.GetResponseByQuestion(message.Text)
 	if err != nil {
 		message.Text = err.Error()
 	}
@@ -49,7 +49,7 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) {
 // handleCallbackQuery is a handle function by getting data with query TODO: Update
 func (b *Bot) handleCallbackQuery(query *tgbotapi.CallbackQuery) {
 	// if query.Data == "gpt-3.5-turbo" {
-	gpt3.GPType = query.Data // add to require
+	gpt3.EngineTypes = query.Data // add to require
 	// }
 
 	deleteMsg := tgbotapi.NewDeleteMessage(query.Message.Chat.ID, query.Message.MessageID)
