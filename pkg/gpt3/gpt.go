@@ -15,7 +15,7 @@ import (
 
 // API key from openai
 const (
-	API_KEY = ""
+	API_KEY = "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"
 )
 
 var (
@@ -102,27 +102,42 @@ func GenerateImageResponse(prompt string) (*os.File, error) {
 		Prompt:         prompt,
 		Size:           openai.CreateImageSize1024x1024,
 		ResponseFormat: openai.CreateImageResponseFormatB64JSON,
+		N:              1,
+		User:           openai.GPT3Dot5Turbo0301,
 	}
+
+	defer func() {
+		if err := recover(); err != nil {
+			return
+
+		}
+	}()
 
 	resp, err := c.CreateImage(ctx, req)
 	if err != nil {
-		logger.Error("Error to generate image: ", err)
+		return nil, err
 	}
 
 	b, err := base64.StdEncoding.DecodeString(resp.Data[0].B64JSON)
 	if err != nil {
 		logger.Error("Error to decode string returns the bytes represented by the base64 string: ", err)
+		return nil, err
+
 	}
 
-	f, err := os.Create("image.png")
+	f, err := os.Create("img/image.png")
 	if err != nil {
 		logger.Error("Error to creates the named file: ", err)
+		return nil, err
+
 	}
 	defer f.Close()
 
 	_, err = f.Write(b)
 	if err != nil {
 		logger.Error("Error to returns the number of bytes written: ", err)
+		return nil, err
+
 	}
 
 	return f, nil

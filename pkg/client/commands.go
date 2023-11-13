@@ -10,11 +10,11 @@ import (
 
 // constants with commands to bot
 const (
-	commandStart          = "start"   // command to start bot
-	commandAccount        = "account" // command to get account info
-	commandSettings       = "setting" // command to set type of bot
-	commandGeneratedImage = "genimg"  // command to generate image by keywords
-	commandHelp           = "help"    // command to get help list all commands
+	commandStart          = "start"         // command to start bot
+	commandAccount        = "account"       // command to get account info
+	commandSettings       = "setting"       // command to set type of bot
+	commandGeneratedImage = "generateimage" // command to generate image by keywords
+	commandHelp           = "help"          // command to get help list all commands
 )
 
 // handleCommand is a handle function to send a command for bot
@@ -35,17 +35,32 @@ func (b *Bot) handleCommand(message *tgbotapi.Message) error {
 	}
 }
 
-// handleGenerateImageCommand TODO:
+// handleGenerateImageCommand TODO: переделать архитектуру хранения
 func (b *Bot) handleGenerateImageCommand(message *tgbotapi.Message) error {
 	keywords := message.CommandArguments()
-	msgTemp := tgbotapi.NewMessage(message.Chat.ID, "Please wait while I process your question..."+ct)
-	id, _ := b.bot.Send(msgTemp)
-	photo, err := gpt3.GenerateImageResponse(keywords)
-	if err != nil {
-		log.Println(err)
+	if keywords == "" {
+		msgTemp := tgbotapi.NewMessage(message.Chat.ID, "please write a description for your picture:\n /generateimage funny gopher")
+		b.bot.Send(msgTemp)
+		return nil
 	}
 
-	photoConfig := tgbotapi.NewPhotoUpload(message.Chat.ID, photo)
+	msgTemp := tgbotapi.NewMessage(message.Chat.ID, "Please wait while I generate your image..."+ct)
+	id, _ := b.bot.Send(msgTemp)
+
+	photo, err := gpt3.GenerateImageResponse(keywords)
+	if err != nil {
+		log.Printf("Failed to send Photo: %v", err)
+	}
+
+	if photo == nil {
+		msgTemp := tgbotapi.NewMessage(message.Chat.ID, "I don't like creating this "+sc)
+		b.bot.Send(msgTemp)
+		deleteMsg := tgbotapi.NewDeleteMessage(message.Chat.ID, id.MessageID)
+		b.bot.Send(deleteMsg)
+		return nil
+	}
+
+	photoConfig := tgbotapi.NewPhotoUpload(message.Chat.ID, "img/image.png")
 	deleteMsg := tgbotapi.NewDeleteMessage(message.Chat.ID, id.MessageID)
 	b.bot.Send(deleteMsg)
 

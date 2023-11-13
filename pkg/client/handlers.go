@@ -12,6 +12,7 @@ var (
 	oh = "🫢"
 	// lw = "🫶"
 	ct = "😺"
+	sc = "😐"
 )
 
 // handleMessage is a handle function to send a bot message
