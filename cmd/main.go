@@ -2,14 +2,13 @@ package main
 
 import (
 	"log"
+	"os"
 
-	telegram "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/client"
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/helpers/dbutils"
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/logger"
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/token"
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/db"
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/messages"
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/tasks/reportserver"
+	telegram "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/client"
+	// "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/logger"
+	db "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/database"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/models"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/token"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -24,14 +23,23 @@ func main() {
 	AuthorizationServer := token.NewAuthorizationServer("http://localhost")
 	telegramBot := telegram.NewBot(bot, "http://localhost")
 
-	// БД информации пользователей.
-	dbconn, err := dbutils.NewDBConnect(connectionStringDB)
-	if err != nil {
-		logger.Fatal("Ошибка подключения к базе данных:", "err", err)
+	config := &db.Config{
+		Host:     os.Getenv("DB_HOST"),
+		Port:     os.Getenv("DB_PORT"),
+		User:     os.Getenv("DB_USER"),
+		Password: os.Getenv("DB_PASS"),
+		DBName:   os.Getenv("DB_DBNAME"),
+		SSLMode:  os.Getenv("DB_SSLMODE"),
 	}
-	userStorage := db.NewUserStorage(dbconn, "", 0)
-	msgModel := messages.New(userStorage)
-	reportserver.StartReportServer(msgModel)
+
+	db, err := db.NewConnection(config)
+	if err != nil {
+		log.Fatal("could not load the database ")
+	}
+	err = models.MigrateUsers(db)
+	if err != nil {
+		log.Fatal("could not migrate db")
+	}
 
 	go func() {
 		if err := telegramBot.Start(); err != nil {
