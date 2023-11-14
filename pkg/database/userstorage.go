@@ -95,9 +95,12 @@ type Repository struct {
 }
 
 type UserStorage struct {
-	Author    string `json:"author"`
-	Title     string `json:"title"`
-	Publisher string `json:"publisher"`
+	ID          uint   `gorm:"primary key;autoincrement" json:"id"`
+	IDtg        string `json:"idtg"`
+	TgToken     string `json:"tgtoken"`
+	MaxMessages string `json:"maxmessages"`
+	MaxImages   string `json:"maximages"`
+	Premium     bool   `json:"premium"`
 }
 
 func NewConnection(config *Config) (*gorm.DB, error) {
@@ -111,4 +114,3 @@ func NewConnection(config *Config) (*gorm.DB, error) {
 	}
 	return db, nil
 }
-

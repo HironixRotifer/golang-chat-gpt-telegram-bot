@@ -12,6 +12,25 @@ import (
 	"go.uber.org/multierr"
 )
 
+type Select struct {
+	Distinct   bool
+	Columns    []Column
+	Expression Expression
+}
+
+type Expression interface {
+	Build(builder Builder)
+}
+
+type Delete struct {
+	Modifier string
+}
+
+type Update struct {
+	Modifier string
+	Table    Table
+}
+
 // sqlErr Форматирование текстов ошибок.
 func sqlErr(err error, query string, args ...any) error {
 	return fmt.Errorf(`run query "%s" with args %+v: %w`, query, args, err)
@@ -44,15 +63,6 @@ func NamedExec(ctx context.Context, db sqlx.ExtContext, query string, arg any) (
 	}
 
 	return Exec(ctx, db, db.Rebind(nq), args...)
-}
-
-// Select Выборка по запросу с параметрами (неименованные, в виде $1...$n).
-func Select(ctx context.Context, db sqlx.QueryerContext, dest any, query string, args ...any) error {
-	if err := sqlx.SelectContext(ctx, db, dest, query, args...); err != nil {
-		return sqlErr(err, query, args...)
-	}
-
-	return nil
 }
 
 // GetMap Выборка по запросу с параметрами (неименованные, в виде $1...$n).
@@ -106,4 +116,73 @@ func RunTx(ctx context.Context, db TxRunner, f TxFunc) (err error) {
 	}()
 	// Выполнение вложенной функции и возврат результата.
 	return f(tx)
+}
+
+// SELECT
+func (s Select) Build(builder Builder) {
+	if len(s.Columns) > 0 {
+		if s.Distinct {
+			builder.WriteString("DISTINCT ")
+		}
+
+		for idx, column := range s.Columns {
+			if idx > 0 {
+				builder.WriteByte(',')
+			}
+			builder.WriteQuoted(column)
+		}
+	} else {
+		builder.WriteByte('*')
+	}
+}
+
+// DELETE
+func (d Delete) Name() string {
+	return "DELETE"
+}
+
+func (d Delete) Build(builder Builder) {
+	builder.WriteString("DELETE")
+
+	if d.Modifier != "" {
+		builder.WriteByte(' ')
+		builder.WriteString(d.Modifier)
+	}
+}
+
+func (d Delete) MergeClause(clause *Clause) {
+	clause.Name = ""
+	clause.Expression = d
+}
+
+// Name update clause name
+func (update Update) Name() string {
+	return "UPDATE"
+}
+
+// UBPATE
+func (update Update) Build(builder Builder) {
+	if update.Modifier != "" {
+		builder.WriteString(update.Modifier)
+		builder.WriteByte(' ')
+	}
+
+	if update.Table.Name == "" {
+		builder.WriteQuoted(currentTable)
+	} else {
+		builder.WriteQuoted(update.Table)
+	}
+}
+
+// MergeClause merge update clause
+func (update Update) MergeClause(clause *Clause) {
+	if v, ok := clause.Expression.(Update); ok {
+		if update.Modifier == "" {
+			update.Modifier = v.Modifier
+		}
+		if update.Table.Name == "" {
+			update.Table = v.Table
+		}
+	}
+	clause.Expression = update
 }
