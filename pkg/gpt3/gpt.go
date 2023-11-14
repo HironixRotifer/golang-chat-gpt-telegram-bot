@@ -15,7 +15,7 @@ import (
 
 // API key from openai
 const (
-	API_KEY = "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"
+	API_KEY = ""
 )
 
 var (
