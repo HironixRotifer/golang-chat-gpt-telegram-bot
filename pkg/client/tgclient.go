@@ -11,7 +11,7 @@ type Bot struct {
 	redirectURL string
 }
 
-// Функция создания нового бота
+// Create a new bot
 func NewBot(bot *tgbotapi.BotAPI, redirectURL string) *Bot {
 	return &Bot{bot: bot, redirectURL: redirectURL}
 }
@@ -33,6 +33,17 @@ func (b *Bot) Start() error {
 // handleUpdates updates chat, receives text and commands
 func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 	for update := range updates {
+
+		if update.Message.Voice != nil {
+			b.handleVoiceMessage(update.Message)
+			continue
+		}
+
+		// if update.Message.Audio != nil {
+		// 	b.handleAudioMessage(update.Message)
+		// 	continue
+		// }
+
 		if update.CallbackQuery != nil { // to handle a user's click on inline buttons
 			b.handleCallbackQuery(update.CallbackQuery)
 			continue
@@ -44,11 +55,8 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 			b.handleCommand(update.Message)
 			continue
 		}
-		// if keywords := update.Message.CommandArguments(); keywords != "" {
-		// 	b.handleGenerateImageCommand(keywords)
-		// }
 
-		b.handleMessage(update.Message)
+		// b.handleMessage(update.Message)
 	}
 }
 

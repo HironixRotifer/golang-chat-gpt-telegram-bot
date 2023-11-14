@@ -3,8 +3,8 @@ package client
 import (
 	"log"
 
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/gpt3"
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/models"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/openai"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -47,7 +47,7 @@ func (b *Bot) handleGenerateImageCommand(message *tgbotapi.Message) error {
 	msgTemp := tgbotapi.NewMessage(message.Chat.ID, "Please wait while I generate your image..."+ct)
 	id, _ := b.bot.Send(msgTemp)
 
-	photo, err := gpt3.GenerateImageResponse(keywords)
+	photo, err := openai.GenerateImageResponse(keywords)
 	if err != nil {
 		log.Printf("Failed to send Photo: %v", err)
 	}
@@ -104,8 +104,8 @@ func (b *Bot) handleAccountCommand(message *tgbotapi.Message) error {
 func (b *Bot) handleSettingCommand(message *tgbotapi.Message) error {
 	// create a buttons
 	var row1 = []tgbotapi.InlineKeyboardButton{
-		tgbotapi.NewInlineKeyboardButtonData("gpt-3.5-turbo-16k", "gpt-3.5-turbo"),
-		tgbotapi.NewInlineKeyboardButtonData("gpt-3.5-turbo-instruct", "gpt-3.5-turbo-instruct"),
+		tgbotapi.NewInlineKeyboardButtonData("gpt-3.5-turbo-0301", "gpt-3.5-turbo-0301"),
+		tgbotapi.NewInlineKeyboardButtonData("code-davinci-002", "code-davinci-002"),
 	}
 	var row2 = []tgbotapi.InlineKeyboardButton{
 		tgbotapi.NewInlineKeyboardButtonData("gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k"),

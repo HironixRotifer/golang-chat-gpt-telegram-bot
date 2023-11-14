@@ -3,7 +3,6 @@ module github.com/HironixRotifer/golang-chat-gpt-telegram-bot
 go 1.21.3
 
 require (
-	github.com/PullRequestInc/go-gpt3 v1.1.18
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/jackc/pgx/v4 v4.17.2
 	github.com/jmoiron/sqlx v1.3.5
@@ -38,7 +37,6 @@ require (
 	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/mod v0.9.0 // indirect
-	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
 )

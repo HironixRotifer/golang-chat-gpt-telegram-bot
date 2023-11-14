@@ -1,9 +1,13 @@
 package client
 
 import (
+	"io"
+	"net/http"
+	"os"
 	"strings"
 
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/gpt3"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/logger"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/openai"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -23,7 +27,7 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) {
 	id, _ := b.bot.Send(msgTemp)
 
 	// get response from chat-gpt3
-	response, err := gpt3.GetResponseByQuestion(message.Text)
+	response, err := openai.GetResponseByQuestionOpenAi(message.Text)
 	if err != nil {
 		message.Text = err.Error()
 	}
@@ -42,27 +46,104 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) {
 	b.bot.Send(msg)
 }
 
-// // handleMessage is a handle function to send image
-// func (b *Bot) handleGenerateImage(message *tgbotapi.Message) {
+// handleVoiceMessage is hendle func by recive voice messages and answer them
+func (b *Bot) handleVoiceMessage(message *tgbotapi.Message) error {
+	var msg = tgbotapi.NewMessage(message.Chat.ID, "file is too big")
+	defer func() {
+		if err := recover(); err != nil {
+			b.bot.Send(msg)
+			return
+		}
+	}()
 
-// }
+	fileID := message.Voice.FileID
+	file, err := b.bot.GetFile(tgbotapi.FileConfig{FileID: fileID})
+	if err != nil {
+		logger.Error("Error to get voice message", err)
+	}
+
+	url := "https://api.telegram.org/file/bot" + b.bot.Token + "/" + file.FilePath
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Создаем новый файл для сохранения аудиосообщения
+	audioFile, err := os.Create("audio_message.mp3")
+	if err != nil {
+		return err
+	}
+	defer audioFile.Close()
+
+	// Копируем содержимое файла аудиосообщения из HTTP ответа в созданный файл
+	_, err = io.Copy(audioFile, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	msg = tgbotapi.NewMessage(message.Chat.ID, openai.SpeechToText(audioFile.Name()))
+	b.bot.Send(msg)
+
+	return nil
+}
 
 // handleCallbackQuery is a handle function by getting data with query TODO: Update
 func (b *Bot) handleCallbackQuery(query *tgbotapi.CallbackQuery) {
-	// if query.Data == "gpt-3.5-turbo" {
-	gpt3.EngineTypes = query.Data // add to require
-	// }
+	openai.EngineTypes = query.Data // add to require
 
 	deleteMsg := tgbotapi.NewDeleteMessage(query.Message.Chat.ID, query.Message.MessageID)
 	b.bot.Send(deleteMsg)
 }
 
-// func deleteInlineButtons(c *Client, userID int64, msgID int, sourceText string) error {
-// 	msg := tgbotapi.NewEditMessageText(userID, msgID, sourceText)
-// 	_, err := c.client.Send(msg)
-// 	if err != nil {
-// 		logger.Error("Ошибка отправки сообщения", "err", err)
-// 		return errors.Wrap(err, "client.Send remove inline-buttons")
-// 	}
-// 	return nil
-// }
+// TODO:
+func (b *Bot) handleAudioMessage(message *tgbotapi.Message) error {
+	audio := message.Audio
+
+	// Получаем информацию о файле аудиосообщения
+	fileConfig := tgbotapi.FileConfig{
+		FileID: audio.FileID,
+	}
+	file, err := b.bot.GetFile(fileConfig)
+	if err != nil {
+		return err
+	}
+
+	// Скачиваем файл аудиосообщения
+	url := "https://api.telegram.org/file/bot" + b.bot.Token + "/" + file.FilePath
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Создаем новый файл для сохранения аудиосообщения
+	audioFile, err := os.Create("audio_message.mp3")
+	if err != nil {
+		return err
+	}
+	defer audioFile.Close()
+
+	// Копируем содержимое файла аудиосообщения из HTTP ответа в созданный файл
+	_, err = io.Copy(audioFile, resp.Body)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// TODO:
+func (b *Bot) DeleteTempMessage(message *tgbotapi.Message) {
+	deleteMsg := tgbotapi.NewDeleteMessage(message.Chat.ID, message.MessageID)
+	b.bot.Send(deleteMsg)
+
+}
+
+// TODO:
+func (b *Bot) NewTempMessage(message *tgbotapi.Message, messageText string) {
+	msg := tgbotapi.NewMessage(message.Chat.ID, messageText)
+	b.bot.Send(msg)
+	// if err != nil {
+	// 	logger.Error("Error temp message: ", err)
+	// }
+}
