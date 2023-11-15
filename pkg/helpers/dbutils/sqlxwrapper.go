@@ -7,9 +7,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/multierr"
+	"github.com/jinzhu/gorm"
+
 )
 
 type Select struct {
@@ -29,6 +32,11 @@ type Delete struct {
 type Update struct {
 	Modifier string
 	Table    Table
+}
+
+type TelegramToken struct {
+	ID   int
+	Name string
 }
 
 // sqlErr Форматирование текстов ошибок.
@@ -160,7 +168,7 @@ func (update Update) Name() string {
 	return "UPDATE"
 }
 
-// UBPATE
+// UPDATE
 func (update Update) Build(builder Builder) {
 	if update.Modifier != "" {
 		builder.WriteString(update.Modifier)
@@ -172,6 +180,30 @@ func (update Update) Build(builder Builder) {
 	} else {
 		builder.WriteQuoted(update.Table)
 	}
+}
+
+// Create new telegram token
+func Token() {
+	db, err := gorm.Open("postgres")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	// Auto create table based on TelegramToken struct
+	db.AutoMigrate(&TelegramToken{})
+
+	// Create new telegram token
+	token1 := TelegramToken{Name: "telegram token 1"}
+	token2 := TelegramToken{Name: "telegram token 2"}
+	db.Create(&token1)
+	db.Create(&token2)
+	fmt.Println("Telegram tokens created successfully")
+
+	// Count number of telegram tokens
+	var count int
+	db.Model(&TelegramToken{}).Count(&count)
+	fmt.Printf("Total number of telegram tokens: %d\n", count)
 }
 
 // MergeClause merge update clause

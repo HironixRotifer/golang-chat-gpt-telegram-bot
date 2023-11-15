@@ -5,6 +5,7 @@ go 1.21.3
 require (
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/jackc/pgx/v4 v4.17.2
+	github.com/jinzhu/gorm v1.9.16
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/pkg/errors v0.9.1
 	github.com/sashabaranov/go-openai v1.16.0
