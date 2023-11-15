@@ -6,7 +6,9 @@ package dbutils
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/logger"
 	"github.com/jackc/pgx/v4"
@@ -14,8 +16,82 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+var (
+	// ErrRecordNotFound returns a "record not found error". Occurs only when attempting to query the database with a struct; querying with a slice won't return this error
+	ErrRecordNotFound = errors.New("record not found")
+	// ErrInvalidSQL occurs when you attempt a query with invalid SQL
+	ErrInvalidSQL = errors.New("invalid SQL")
+	// ErrInvalidTransaction occurs when you are trying to `Commit` or `Rollback`
+	ErrInvalidTransaction = errors.New("no valid transaction")
+	// ErrCantStartTransaction can't start transaction when you are trying to start one with `Begin`
+	ErrCantStartTransaction = errors.New("can't start transaction")
+	// ErrUnaddressable unaddressable value
+	ErrUnaddressable = errors.New("using unaddressable value")
+)
+
 // pgxLogger Логгер для pgx, реализующий интерфейс Logger пакета pgx.
 type pgxLogger struct{}
+
+const (
+	PrimaryKey   string = "~~~py~~~" // primary key
+	CurrentTable string = "~~~ct~~~" // current table
+	Associations string = "~~~as~~~" // associations
+)
+
+var (
+	currentTable  = Table{Name: CurrentTable}
+	PrimaryColumn = Column{Table: CurrentTable, Name: PrimaryKey}
+)
+
+// Column quote with name
+type Column struct {
+	Table string
+	Name  string
+	Alias string
+	Raw   bool
+}
+
+// Table quote with name
+type Table struct {
+	Name  string
+	Alias string
+	Raw   bool
+}
+
+type Errors []error
+
+// Interface clause interface
+type Interface interface {
+	Name() string
+	Build(Builder)
+	MergeClause(*Clause)
+}
+
+// ClauseBuilder clause builder, allows to customize how to build clause
+type ClauseBuilder func(Clause, Builder)
+
+type Writer interface {
+	WriteByte(byte) error
+	WriteString(string) (int, error)
+}
+
+// Builder builder interface
+type Builder interface {
+	Writer
+	WriteQuoted(field interface{})
+	AddVar(Writer, ...interface{})
+	AddError(error) error
+}
+
+// Clause
+type Clause struct {
+	Name                string // WHERE
+	BeforeExpression    Expression
+	AfterNameExpression Expression
+	AfterExpression     Expression
+	Expression          Expression
+	Builder             ClauseBuilder
+}
 
 // Log Функция реализации интерфейса Logger пакета pgx.
 func (pl *pgxLogger) Log(ctx context.Context, level pgx.LogLevel, msg string, data map[string]any) {
@@ -58,39 +134,6 @@ func NewDBConnect(connString string) (*sqlx.DB, error) {
 	return dbh, nil
 }
 
-// Interface clause interface
-type Interface interface {
-	Name() string
-	Build(Builder)
-	MergeClause(*Clause)
-}
-
-// ClauseBuilder clause builder, allows to customize how to build clause
-type ClauseBuilder func(Clause, Builder)
-
-type Writer interface {
-	WriteByte(byte) error
-	WriteString(string) (int, error)
-}
-
-// Builder builder interface
-type Builder interface {
-	Writer
-	WriteQuoted(field interface{})
-	AddVar(Writer, ...interface{})
-	AddError(error) error
-}
-
-// Clause
-type Clause struct {
-	Name                string // WHERE
-	BeforeExpression    Expression
-	AfterNameExpression Expression
-	AfterExpression     Expression
-	Expression          Expression
-	Builder             ClauseBuilder
-}
-
 // Build build clause
 func (c Clause) Build(builder Builder) {
 	if c.Builder != nil {
@@ -120,28 +163,35 @@ func (c Clause) Build(builder Builder) {
 	}
 }
 
-const (
-	PrimaryKey   string = "~~~py~~~" // primary key
-	CurrentTable string = "~~~ct~~~" // current table
-	Associations string = "~~~as~~~" // associations
-)
+// Add adds an error to a given slice of errors
+func (errs Errors) Add(newErrors ...error) Errors {
+	for _, err := range newErrors {
+		if err == nil {
+			continue
+		}
 
-var (
-	currentTable  = Table{Name: CurrentTable}
-	PrimaryColumn = Column{Table: CurrentTable, Name: PrimaryKey}
-)
-
-// Column quote with name
-type Column struct {
-	Table string
-	Name  string
-	Alias string
-	Raw   bool
+		if errors, ok := err.(Errors); ok {
+			errs = errs.Add(errors...)
+		} else {
+			ok = true
+			for _, e := range errs {
+				if err == e {
+					ok = false
+				}
+			}
+			if ok {
+				errs = append(errs, err)
+			}
+		}
+	}
+	return errs
 }
 
-// Table quote with name
-type Table struct {
-	Name  string
-	Alias string
-	Raw   bool
+// Error takes a slice of all errors that have occurred and returns it as a formatted string
+func (errs Errors) Error() string {
+	var errors = []string{}
+	for _, e := range errs {
+		errors = append(errors, e.Error())
+	}
+	return strings.Join(errors, "; ")
 }
