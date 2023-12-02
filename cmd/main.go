@@ -4,11 +4,8 @@ import (
 	"log"
 	// "os"
 
-	telegram "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/client"
-	// "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/logger"
-	// db "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/database"
-	// "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/models"
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/token"
+	telegram "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/app"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/token"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
