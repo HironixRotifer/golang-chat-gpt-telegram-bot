@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/openai"
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/logger"
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/openai"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 

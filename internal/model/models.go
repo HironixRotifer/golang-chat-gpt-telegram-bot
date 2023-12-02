@@ -1,7 +1,7 @@
 package models
 
 import (
-	database "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/database"
+	database "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/database"
 	"gorm.io/gorm"
 )
 

@@ -3,8 +3,8 @@ package client
 import (
 	"log"
 
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/models"
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/openai"
+	models "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/model"
+	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/openai"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
