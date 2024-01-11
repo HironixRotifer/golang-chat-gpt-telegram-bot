@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"os"
+	"time"
 
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/logger"
 	openai "github.com/sashabaranov/go-openai"
@@ -12,7 +13,9 @@ import (
 // TODO: Заменить модулем питухона
 // GenerateImageResponse is a function to generate image with keywords
 func GenerateImageResponse(prompt string) (*os.File, error) {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
 	req := openai.ImageRequest{
 		Prompt:         prompt,
 		Size:           openai.CreateImageSize1024x1024,

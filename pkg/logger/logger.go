@@ -1,61 +1,52 @@
 package logger
 
 import (
-	"log"
-
-	"go.uber.org/zap"
+	"context"
+	"log/slog"
 )
 
-// Глобальная переменная логгера.
-var logger *zap.Logger
-
-// init Инициализация логгера для использования его во всем приложении.
-// init будет выполнен один раз, независимо от количества импортов в разных местах приложения.
-func init() {
-	// Инициализация для режима разработки.
-	localLogger, err := zap.NewDevelopment()
-	// Вариант инициализации для продакшена.
-	//localLogger, err := zap.NewProduction()
-
-	if err != nil {
-		log.Fatal("Ошибка инициализации логгера zap", err)
-	}
-
-	logger = localLogger
-
-}
-
-// Fatal - запись в лог, уровень Fatal.
-func Fatal(msg string, keysAndValues ...interface{}) {
-	sugar := logger.Sugar()
-	sugar.Fatalw(msg, keysAndValues...)
-}
+var logger *slog.Logger
 
 // Error - запись в лог, уровень Error.
-func Error(msg string, keysAndValues ...interface{}) {
-	sugar := logger.Sugar()
-	sugar.Errorw(msg, keysAndValues...)
+func Error(msg string, args ...any) {
+	logger.Error(msg, args...)
+}
+
+func ErrorContext(ctx context.Context, msg string, args ...any) {
+	logger.ErrorContext(ctx, msg, args...)
 }
 
 // Warn - запись в лог, уровень Warn.
-func Warn(msg string, keysAndValues ...interface{}) {
-	sugar := logger.Sugar()
-	sugar.Warnw(msg, keysAndValues...)
+func Warn(msg string, args ...any) {
+	logger.Warn(msg, args...)
+}
+
+func WarnContext(ctx context.Context, msg string, args ...any) {
+	logger.WarnContext(ctx, msg, args...)
 }
 
 // Info - запись в лог, уровень Info.
-func Info(msg string, keysAndValues ...interface{}) {
-	sugar := logger.Sugar()
-	sugar.Infow(msg, keysAndValues...)
+func Info(msg string, args ...any) {
+	logger.Info(msg, args...)
+}
+
+func InfoContext(ctx context.Context, msg string, args ...any) {
+	logger.InfoContext(ctx, msg, args...)
 }
 
 // Debug - запись в лог, уровень Debug.
-func Debug(msg string, keysAndValues ...interface{}) {
-	sugar := logger.Sugar()
-	sugar.Debugw(msg, keysAndValues...)
+func Debug(msg string, args ...any) {
+	logger.Debug(msg, args...)
 }
 
-// DebugZap - запись в лог, уровень DebugZap.
-func DebugZap(msg string, fields ...zap.Field) {
-	logger.Debug(msg, fields...)
+func DebugContext(ctx context.Context, msg string, args ...any) {
+	logger.DebugContext(ctx, msg, args...)
+}
+
+// Err - обработка ошибки key - value для помещения в лог
+func Err(err error) slog.Attr {
+	return slog.Attr{
+		Key:   "error",
+		Value: slog.StringValue(err.Error()),
+	}
 }

@@ -2,26 +2,24 @@ package openai
 
 import (
 	"context"
+	"strings"
+	"time"
 
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/logger"
 	openai "github.com/sashabaranov/go-openai"
 )
 
-const (
-	API_KEY = "" //
-)
-
 var (
-	// type of openai engine
-	EngineTypes = "gpt-3.5-turbo-0301"
-	client      = openai.NewClient(API_KEY)
+	mapMsg = make(map[string]openai.ChatCompletionMessage, 10)
 )
 
 // GetResponseByQuestion is a function to answer with user question
-func GetResponseByQuestionOpenAi(question string) ([]string, error) {
-	ctx := context.Background()
+func GetResponseByQuestionOpenAi(question string, FirstName string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
 
-	stream, err := client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+	question = strings.Replace(question, "\n", "", -1)
+	resp, err := client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 		// EngineTypes
 		Model: openai.GPT3Dot5Turbo16K0613,
 		// Maximum words of response
@@ -29,8 +27,12 @@ func GetResponseByQuestionOpenAi(question string) ([]string, error) {
 		// Message
 		Messages: []openai.ChatCompletionMessage{
 			{
+				Role:    openai.ChatMessageRoleAssistant,
+				Content: mapMsg[FirstName].Content,
+			},
+			{
+				Role:    openai.ChatMessageRoleAssistant,
 				Content: question,
-				Role:    "assistant",
 			},
 		},
 		// To summarize, Top-p is a balance between response quality and variety, allowing you to customize the API's behavior to suit your particular use case.
@@ -41,17 +43,27 @@ func GetResponseByQuestionOpenAi(question string) ([]string, error) {
 
 	if err != nil {
 		logger.Error("Error to get response from openai: ", err)
-		return nil, err
+		return "", err
 	}
 
-	resp := stream.Choices
-	if err != nil {
-		logger.Error("Error to response processing sream recv: ", err)
-		return nil, err
+	content := resp.Choices[0].Message.Content
+
+	mapMsg[FirstName] = openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleAssistant,
+		Content: content,
 	}
 
-	var msg []string
-	msg = append(msg, resp[0].Message.Content)
+	// resp := stream.Choices
+	// if err != nil {
+	// 	logger.Error("Error to response processing sream recv: ", err)
+	// 	return nil, err
+	// }
 
-	return msg, nil
+	// var msg []string
+	// var msg string
+
+	// msg1 = strings.Join(msg, " ")
+	// msg = append(msg, resp[0].Message.Content)
+
+	return content, nil
 }

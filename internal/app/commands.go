@@ -2,6 +2,7 @@ package client
 
 import (
 	"log"
+	"time"
 
 	models "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/model"
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/openai"
@@ -128,6 +129,25 @@ func (b *Bot) handleSettingCommand(message *tgbotapi.Message) error {
 
 // 	b.bot.RestrictChatMember()
 
+// func (b *Bot) PromoteChatMember() {
+
 // 	b.bot.PromoteChatMember() // добавляет права администратора пользователю
 
 // }
+
+func (b *Bot) RestrictUser(chatID int64, userID int) {
+	restrictionConfig := tgbotapi.RestrictChatMemberConfig{
+		ChatMemberConfig: tgbotapi.ChatMemberConfig{
+			ChatID: chatID,
+			UserID: userID,
+		},
+		UntilDate: time.Now().Add(time.Hour * 24).Unix(), // блокировка на 24 часа
+	}
+	_, err := b.bot.RestrictChatMember(restrictionConfig)
+	if err != nil {
+		log.Println("Error restricting chat member:", err)
+	} else {
+		msg := tgbotapi.NewMessage(chatID, "Пользователь заблокирован на 24 часа.")
+		b.bot.Send(msg)
+	}
+}

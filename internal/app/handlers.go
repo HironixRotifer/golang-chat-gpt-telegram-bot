@@ -1,48 +1,49 @@
 package client
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"strings"
 
-	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/openai"
+	ai "github.com/HironixRotifer/golang-chat-gpt-telegram-bot/internal/openai"
 	"github.com/HironixRotifer/golang-chat-gpt-telegram-bot/pkg/logger"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/sashabaranov/go-openai"
 )
 
 var (
 	// ok = "👌"
-	oh = "🫢"
+	// oh = "🫢"
 	// lw = "🫶"
 	ct = "😺"
 	sc = "😐"
 )
 
 // handleMessage is a handle function to send a bot message
-// Exampe: "Hi, what`s up?"
 func (b *Bot) handleMessage(message *tgbotapi.Message) {
 	// create a new temp message
-	msgTemp := tgbotapi.NewMessage(message.Chat.ID, "Please wait while I process your question..."+ct)
-	id, _ := b.bot.Send(msgTemp)
+	id := b.newTempMessage(message.Chat.ID, "Please wait while I process your question...")
 
-	// get response from chat-gpt3
-	response, err := openai.GetResponseByQuestionOpenAi(message.Text)
+	fmt.Println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE ", message.From.FirstName)
+	fmt.Println(message.From.ID)
+	fmt.Println(message.From.ID)
+
+	// get response from chat-gpt
+	resp, err := ai.GetResponseByQuestionOpenAi(message.Text, message.From.FirstName)
 	if err != nil {
-		message.Text = err.Error()
+		resp = err.Error()
 	}
-	message.Text = strings.Join(response, " ")
 
 	// check the response for an empty value
-	if message.Text == "" {
-		message.Text = "Please try again" + oh
+	if resp == "" {
+		resp = "Please try again"
 	}
 
 	// remove a temp message
-	deleteMsg := tgbotapi.NewDeleteMessage(message.Chat.ID, id.MessageID)
-	b.bot.Send(deleteMsg)
-	msg := tgbotapi.NewMessage(message.Chat.ID, message.Text)
+	b.deleteTempMessage(message.Chat.ID, id)
 
+	msg := tgbotapi.NewMessage(message.Chat.ID, resp)
 	b.bot.Send(msg)
 }
 
@@ -82,7 +83,7 @@ func (b *Bot) handleVoiceMessage(message *tgbotapi.Message) error {
 		return err
 	}
 
-	msg = tgbotapi.NewMessage(message.Chat.ID, openai.SpeechToText(audioFile.Name()))
+	msg = tgbotapi.NewMessage(message.Chat.ID, ai.SpeechToText(audioFile.Name()))
 	b.bot.Send(msg)
 
 	return nil
@@ -90,7 +91,19 @@ func (b *Bot) handleVoiceMessage(message *tgbotapi.Message) error {
 
 // handleCallbackQuery is a handle function by getting data with query TODO: Update
 func (b *Bot) handleCallbackQuery(query *tgbotapi.CallbackQuery) {
-	openai.EngineTypes = query.Data // add to require
+
+	switch query.Data {
+	case "gpt-3.5-turbo-0301":
+		ai.EngineTypes = openai.GPT3Dot5Turbo16K0613
+	case "gpt-3.5-turbo-16k":
+		ai.EngineTypes = openai.GPT3Dot5Turbo16K
+	case "code-davinci-002":
+		ai.EngineTypes = openai.CodexCodeDavinci002
+	case "gpt-4":
+		ai.EngineTypes = openai.GPT4
+	default:
+		ai.EngineTypes = openai.GPT3Dot5Turbo16K0613
+	}
 
 	deleteMsg := tgbotapi.NewDeleteMessage(query.Message.Chat.ID, query.Message.MessageID)
 	b.bot.Send(deleteMsg)
@@ -133,17 +146,15 @@ func (b *Bot) handleAudioMessage(message *tgbotapi.Message) error {
 }
 
 // TODO:
-func (b *Bot) DeleteTempMessage(message *tgbotapi.Message) {
-	deleteMsg := tgbotapi.NewDeleteMessage(message.Chat.ID, message.MessageID)
+func (b *Bot) deleteTempMessage(chatID int64, messageID int) {
+	deleteMsg := tgbotapi.NewDeleteMessage(chatID, messageID)
 	b.bot.Send(deleteMsg)
-
 }
 
 // TODO:
-func (b *Bot) NewTempMessage(message *tgbotapi.Message, messageText string) {
-	msg := tgbotapi.NewMessage(message.Chat.ID, messageText)
-	b.bot.Send(msg)
-	// if err != nil {
-	// 	logger.Error("Error temp message: ", err)
-	// }
+func (b *Bot) newTempMessage(chatID int64, messageText string) int {
+	msg := tgbotapi.NewMessage(chatID, messageText)
+	id, _ := b.bot.Send(msg)
+
+	return id.MessageID
 }
